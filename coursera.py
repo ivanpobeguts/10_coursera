@@ -1,6 +1,7 @@
 from lxml import etree
 import requests
 from bs4 import BeautifulSoup
+from openpyxl import Workbook
 
 
 def get_courses_list():
@@ -31,12 +32,42 @@ def get_course_info(course_url):
     course_info_dict['weeks'] = len(soup.findAll('div', {"class": "week"}))
     return course_info_dict
 
-def output_courses_info_to_xlsx(filepath):
-    pass
+
+def output_courses_info_to_xlsx(course_info, sheet):
+    sheet.append({
+        1: course_info['name'],
+        2: course_info['language'],
+        3: course_info['rating'],
+        4: course_info['start_date'],
+        5: course_info['weeks']
+    })
+
+
+def get_workbook():
+    wb = Workbook()
+    sheet = wb.active
+    sheet.title = "python_courses"
+    header = ['Name', 'Language', 'Rating', 'Start date', 'Weeks Ammount']
+    sheet.append(header)
+    return wb
+
+
+def save_excel_workbook(excel_workbook, xlsx_filepath):
+    try:
+        excel_workbook.save(xlsx_filepath)
+        return True
+    except PermissionError:
+        return False
 
 
 if __name__ == '__main__':
     courses_list = get_courses_list()
-    print(courses_list)
+    workbook = get_workbook()
+    workbook.save('python_courses.xlsx')
     for course in courses_list:
-        print(get_course_info(course))
+        course_info = get_course_info(course)
+        output_courses_info_to_xlsx(course_info, workbook.active)
+    if not save_excel_workbook(workbook, 'python_courses.xlsx'):
+        print('Close your file before running script')
+
+    print('OK')
