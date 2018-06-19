@@ -2,6 +2,7 @@ from lxml import etree
 import requests
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
+import argparse
 
 
 def get_courses_list():
@@ -44,7 +45,7 @@ def output_courses_info_to_xlsx(course_info, sheet):
 
 
 def get_workbook():
-    wb = Workbook()
+    wb = Workbook(encoding='utf-8')
     sheet = wb.active
     sheet.title = "python_courses"
     header = ['Name', 'Language', 'Rating', 'Start date', 'Weeks Ammount']
@@ -60,14 +61,25 @@ def save_excel_workbook(excel_workbook, xlsx_filepath):
         return False
 
 
+def get_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'filename',
+        help='output path',
+        default='python_courses.xlsx',
+    )
+    return parser
+
+
 if __name__ == '__main__':
+    output_path = get_parser().parse_args().filename
     courses_list = get_courses_list()
     workbook = get_workbook()
-    workbook.save('python_courses.xlsx')
     for course in courses_list:
         course_info = get_course_info(course)
         output_courses_info_to_xlsx(course_info, workbook.active)
-    if not save_excel_workbook(workbook, 'python_courses.xlsx'):
-        print('Close your file before running script')
+    if not save_excel_workbook(workbook, output_path):
+        print('Close your file before running script!')
+    else:
+        print('Successfully saved to', output_path)
 
-    print('OK')
