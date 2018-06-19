@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
 import argparse
+import os
 
 
 def get_courses_list():
@@ -68,6 +69,10 @@ def get_parser():
         help='output path',
         default='python_courses.xlsx',
     )
+    if not parser.parse_args().filename.endswith('.xlsx'):
+        parser.error(
+            ".xlsx file expected!"
+        )
     return parser
 
 
@@ -82,4 +87,3 @@ if __name__ == '__main__':
         print('Close your file before running script!')
     else:
         print('Successfully saved to', output_path)
-
