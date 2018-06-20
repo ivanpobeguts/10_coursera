@@ -66,11 +66,13 @@ def get_parser_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--filename',
+        '-f',
         help='output path',
         default='python_courses.xlsx',
     )
     parser.add_argument(
         '--keyword',
+        '-k',
         help='searching keyword',
         default='python',
     )
