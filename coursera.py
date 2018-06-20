@@ -30,7 +30,9 @@ def get_course_info(course_url):
         course_info_dict['rating'] = rating.text[:3]
     else:
         course_info_dict['rating'] = '-'
-    course_info_dict['start_date'] = soup.find('div', {"class": "startdate rc-StartDateString caption-text"}).text
+    course_info_dict['start_date'] = (
+        soup.find('div', {"class": "startdate rc-StartDateString caption-text"}).text
+    )
     course_info_dict['weeks'] = len(soup.findAll('div', {"class": "week"}))
     return course_info_dict
 
