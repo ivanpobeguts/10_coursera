@@ -3,10 +3,9 @@ import requests
 from bs4 import BeautifulSoup
 from openpyxl import Workbook
 import argparse
-import os
 
 
-def get_courses_list():
+def get_courses_list(keyword):
     courses_list = []
     courses_url = 'https://www.coursera.org/sitemap~www~courses.xml'
     courses = requests.get(courses_url)
@@ -14,7 +13,7 @@ def get_courses_list():
     root = etree.fromstring(bytes_courses_list)
     for url in root.getchildren():
         for loc in url.getchildren():
-            if 'python' in loc.text:
+            if keyword in loc.text:
                 courses_list.append(loc.text)
     return courses_list
 
@@ -22,6 +21,7 @@ def get_courses_list():
 def get_course_info(course_url):
     course_info_dict = {}
     course_html = requests.get(course_url)
+    course_html.encoding = 'utf-8'
     soup = BeautifulSoup(course_html.text, 'html.parser')
     course_info_dict['name'] = soup.find('h1', {"class": "title display-3-text"}).text
     course_info_dict['language'] = soup.find('div', {"class": "rc-Language"}).text
@@ -30,7 +30,7 @@ def get_course_info(course_url):
         course_info_dict['rating'] = rating.text[:3]
     else:
         course_info_dict['rating'] = '-'
-    course_info_dict['start_date'] = soup.find('div', {"class": "startdate rc-StartDateString caption-text"}).text[7:]
+    course_info_dict['start_date'] = soup.find('div', {"class": "startdate rc-StartDateString caption-text"}).text
     course_info_dict['weeks'] = len(soup.findAll('div', {"class": "week"}))
     return course_info_dict
 
@@ -62,23 +62,29 @@ def save_excel_workbook(excel_workbook, xlsx_filepath):
         return False
 
 
-def get_parser():
+def get_parser_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        'filename',
+        '--filename',
         help='output path',
         default='python_courses.xlsx',
+    )
+    parser.add_argument(
+        '--keyword',
+        help='searching keyword',
+        default='python',
     )
     if not parser.parse_args().filename.endswith('.xlsx'):
         parser.error(
             ".xlsx file expected!"
         )
-    return parser
+    return parser.parse_args()
 
 
 if __name__ == '__main__':
-    output_path = get_parser().parse_args().filename
-    courses_list = get_courses_list()
+    output_path = get_parser_args().filename
+    search_keyword = get_parser_args().keyword
+    courses_list = get_courses_list(search_keyword)
     workbook = get_workbook()
     for course in courses_list:
         course_info = get_course_info(course)
