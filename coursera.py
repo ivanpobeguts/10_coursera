@@ -5,12 +5,14 @@ from openpyxl import Workbook
 import argparse
 
 
-def get_courses_urls(keyword):
+def get_data_from_url(url):
+    response = requests.get(url)
+    return response.content
+
+
+def get_courses_urls_from_xml(courses_xml, keyword):
     courses_list = []
-    courses_url = 'https://www.coursera.org/sitemap~www~courses.xml'
-    response = requests.get(courses_url)
-    courses_list = response.content
-    root = etree.fromstring(courses_list)
+    root = etree.fromstring(courses_xml)
     for url in root.getchildren():
         for loc in url.getchildren():
             if keyword in loc.text:
@@ -18,11 +20,9 @@ def get_courses_urls(keyword):
     return courses_list
 
 
-def get_course_info(course_url):
+def get_course_info(course_html):
     course_info_dict = {}
-    course_html = requests.get(course_url)
-    course_html.encoding = 'utf-8'
-    soup = BeautifulSoup(course_html.text, 'html.parser')
+    soup = BeautifulSoup(course_html, 'html.parser')
     course_info_dict['name'] = soup.find('h1', {'class': 'title display-3-text'}).text
     course_info_dict['language'] = soup.find('div', {'class': 'rc-Language'}).text
     rating = soup.find('div', {'class': 'ratings-text bt3-visible-xs'})
@@ -86,10 +86,13 @@ if __name__ == '__main__':
     if not output_path.endswith('.xlsx'):
         print('Warning: your file extension is not .xlsx!')
     search_keyword = get_parser_args().keyword
-    courses_urls = get_courses_urls(search_keyword)
+    courses_urls = get_courses_urls_from_xml(
+        get_data_from_url('https://www.coursera.org/sitemap~www~courses.xml'),
+        search_keyword
+    )
     workbook = get_workbook()
     for course_url in courses_urls:
-        course_info = get_course_info(course_url)
+        course_info = get_course_info(get_data_from_url(course_url))
         output_courses_info_to_xlsx(course_info, workbook.active)
     if not save_excel_workbook(workbook, output_path):
         print('Close your file before running script!')
