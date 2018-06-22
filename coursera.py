@@ -38,6 +38,10 @@ def get_course_info(course_html):
 
 
 def output_courses_info_to_xlsx(course_info, sheet):
+    if course_info['rating']:
+        course_info['rating'] = course_info['rating'][:3]
+    else:
+        course_info['rating'] = '-'
     sheet.append({
         1: course_info['name'],
         2: course_info['language'],
@@ -82,10 +86,11 @@ def get_parser_args():
 
 
 if __name__ == '__main__':
-    output_path = get_parser_args().filename
+    args = get_parser_args()
+    output_path = args.filename
     if not output_path.endswith('.xlsx'):
         print('Warning: your file extension is not .xlsx!')
-    search_keyword = get_parser_args().keyword
+    search_keyword = args.keyword
     courses_urls = get_courses_urls_from_xml(
         get_data_from_url('https://www.coursera.org/sitemap~www~courses.xml'),
         search_keyword
