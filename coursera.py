@@ -23,31 +23,24 @@ def get_courses_urls_from_xml(courses_xml, keyword):
 def get_course_info(course_html):
     course_info_dict = {}
     soup = BeautifulSoup(course_html, 'html.parser')
-    course_info_dict['name'] = soup.find('h1', {'class': 'title display-3-text'}).text
-    course_info_dict['language'] = soup.find('div', {'class': 'rc-Language'}).text
-    rating = soup.find('div', {'class': 'ratings-text bt3-visible-xs'})
-    if rating:
-        course_info_dict['rating'] = rating.text[:3]
-    else:
-        course_info_dict['rating'] = '-'
+    course_info_dict['name'] = soup.find('h1', {'class': 'title display-3-text'})
+    course_info_dict['language'] = soup.find('div', {'class': 'rc-Language'})
+    course_info_dict['rating'] = soup.find('div', {'class': 'ratings-text bt3-visible-xs'})
     course_info_dict['start_date'] = (
-        soup.find('div', {'class': 'startdate rc-StartDateString caption-text'}).text
+        soup.find('div', {'class': 'startdate rc-StartDateString caption-text'})
     )
-    course_info_dict['weeks'] = len(soup.findAll('div', {'class': 'week'}))
+    course_info_dict['weeks'] = soup.findAll('div', {'class': 'week'})
     return course_info_dict
 
 
 def output_courses_info_to_xlsx(course_info, sheet):
-    if course_info['rating']:
-        course_info['rating'] = course_info['rating'][:3]
-    else:
-        course_info['rating'] = '-'
     sheet.append({
-        1: course_info['name'],
-        2: course_info['language'],
-        3: course_info['rating'],
-        4: course_info['start_date'],
-        5: course_info['weeks']
+        1: course_info['name'].text,
+        2: course_info['language'].text,
+        3: course_info['rating'].text[:3]
+            if course_info['rating'] else '-',
+        4: course_info['start_date'].text,
+        5: len(course_info['weeks'])
     })
 
 
